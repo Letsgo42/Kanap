@@ -2,21 +2,43 @@ const colorSelect = document.getElementById("colors");
 const quantity = document.getElementById("quantity");
 const cartBtn = document.getElementById("addToCart");
 
+
+function displayEmptyPage() {
+  const productName = document.getElementById("title");
+  const description = document.querySelector(".item__content__description");
+  const price = document.querySelector(".item__content__titlePrice").lastElementChild;
+  const itemContentSettings = document.querySelector(".item__content__settings");
+  const addToCartBtn = document.querySelector(".item__content__addButton");
+  productName.textContent = "Aucun produit sélectionné";
+  description.style.display = "none";
+  price.style.display = "none";
+  itemContentSettings.style.display = "none";
+  addToCartBtn.style.display = "none";
+}
+
+
 // SELECT PRODUCT ID FROM URL
 let params = new URLSearchParams(document.location.search);
 let id = params.get("id");
-const ressourceURL = (`http://localhost:3000/api/products/${id}`);
+const ressourceURL = `http://localhost:3000/api/products/${id}`;
 
+if (id) {
 // REQUEST DATA FROM API
 fetch(ressourceURL)
   .then( (response) => {
     if (!response.ok) {
+      displayEmptyPage();
       throw new Error(`HTTP error: ${response.status}`);
     }
     return response.json();
   })
   .then( (json) => productDisplay(json) )
   .catch( (error) => console.error(`Fetch problem: ${error}`) );
+}
+else {
+  displayEmptyPage();
+}
+
 
 
 // SELECT/CREATE DOM ELEMENTS TO DISPLAY PRODUCT INFOS
@@ -59,7 +81,7 @@ function checkSelection() {
       colorSelect.removeAttribute("style");
     })
   }
-  else if (Number(quantity.value) === 0 || Number(quantity.value) > 100) {
+  else if (Number(quantity.value) <= 0 || Number(quantity.value) > 100) {
     let quantitySettings = document.querySelector(".item__content__settings__quantity");
     let quantityErrorMessage = document.createElement("p");
     quantityErrorMessage.textContent = "1 produit minimum, 100 produits maximum";

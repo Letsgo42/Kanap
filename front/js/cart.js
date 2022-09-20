@@ -1,8 +1,10 @@
+const cartPrice = document.querySelector(".cart__price");
+const catrOrder = document.querySelector(".cart__order");
+let inputQuantity = document.createElement("input");
+
 // DON'T DISPLAY FORM IF EMPTY CART
 function checkEmptyCart() {
   if (cartContent.length == 0) {
-    let cartPrice = document.querySelector(".cart__price");
-    let catrOrder = document.querySelector(".cart__order");
     cartPrice.style.display = "none";
     catrOrder.style.display = "none";
   }
@@ -48,7 +50,6 @@ function displayCart(products) {
         let itemSettings = document.createElement("div");
         let itemSettingsQuantity = document.createElement("div");
         let quantity = document.createElement("p");
-        let inputQuantity = document.createElement("input");
         let itemSettingsDelete = document.createElement("div");
         const deleteBtn = document.createElement("p");
         const cartItems = document.getElementById("cart__items");
@@ -154,14 +155,31 @@ function changeQuantity(e) {
 
   for (let i in cartContent) {
     if (parentId == `${cartContent[i].id}` && parentColor == `${cartContent[i].color}`) {
+      if (e.target.value > 0 && e.target.value < 101) {
       cartContent[i].quantity = e.target.value;
       displayTotal();
+      }
+      else {
+        let orderSubmit = document.querySelector(".cart__order__form__submit");
+        e.target.style.color = "red";
+        e.target.style.border ="solid 3px red";
+        e.target.style.fontWeight = "bold";
+        orderSubmit.style.display = "none";
+        cartPrice.style.display = "none";
+        inputQuantity.addEventListener("change", (e) => {
+          if (e.target.value > 0 && e.target.value < 101)
+          orderSubmit.removeAttribute("style");
+          cartPrice.removeAttribute("style");
+          e.target.removeAttribute("style");
+          changeQuantity(e);
+        })
+      }
     }
   }
 }
 
 
-// SELECT FROM DOM ELEMENTS //
+// SELECT FORM DOM ELEMENTS //
 let firstName = document.getElementById("firstName");
 let lastName = document.getElementById("lastName");
 let address = document.getElementById("address");
@@ -183,9 +201,6 @@ formQuestion.forEach(question =>
 
 // TEST INPUT VALIDITY //
 function checkUserForm() {
-  //const firstRegx = /[^A-Za-z-]/gi;
-  //const lastCityRegx = /[^A-Za-z\s-]/gi;
-  //const nameCityRegx = /^[a-z ,.'-]{2,}$/i;
   const nameCityRegx = /^[\p{L} ,.'-]{2,}$/ui;
   const addressRegx = /^[\p{L}\d ,'.\/-]{2,}$/ui;
   const emailRegx = /^\w+(?:[\.-]?\w+)*@\w+(?:[\.-]?\w+)*(?:\.\w{2,3})+$/i;

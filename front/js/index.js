@@ -26,7 +26,6 @@ function productsDisplay(products) {
     link.setAttribute("href", `../html/product.html?id=${product._id}`);
     img.setAttribute("src", product.imageUrl);
     img.setAttribute("alt", product.altTxt);
-    
     productName.classList.add("productName");
     productName.textContent = product.name;
     productDescription.classList.add("productDescription");
