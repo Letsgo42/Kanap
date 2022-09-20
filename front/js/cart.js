@@ -1,8 +1,27 @@
-// REQUEST DATA FROM API //
+// DON'T DISPLAY FORM IF EMPTY CART
+function checkEmptyCart() {
+  if (Cart.length == 0) {
+    let cartPrice = document.querySelector(".cart__price");
+    let catrOrder = document.querySelector(".cart__order");
+    cartPrice.style.display = "none";
+    catrOrder.style.display = "none";
+  }
+}
+
+
+// CONVERT CART CONTENT TO JAVASCRIPT ARRAY
+let Cart = [];
+let currentContent = localStorage.getItem("cart");
+if (currentContent) {
+  Cart = JSON.parse(currentContent);
+}
+checkEmptyCart();
+
+
+// REQUEST PRODUCTS DATA FROM API //
 const ressourceURL = "http://localhost:3000/api/products/";
-const getProducts = 
-  fetch(ressourceURL)
-  .then( (response) => {
+const getProducts = fetch(ressourceURL)
+  .then((response) => {
     if (!response.ok) {
       throw new Error(`HTTP error: ${response.status}`);
     }
@@ -12,13 +31,6 @@ const getProducts =
   getProducts.then((products) => displayCart(products))
   .catch((error) => console.error(`Fetch problem: ${error}`));
 
-const cartItems = document.getElementById("cart__items");
-let Cart = [];
-
-let currentContent = localStorage.getItem("cart");
-if (currentContent) {
-  Cart = JSON.parse(currentContent);
-}
 
 // DISPLAY PRODUCTS IN CART //
 function displayCart(products) {
@@ -39,6 +51,7 @@ function displayCart(products) {
         let inputQuantity = document.createElement("input");
         let itemSettingsDelete = document.createElement("div");
         const deleteBtn = document.createElement("p");
+        const cartItems = document.getElementById("cart__items");
 
         article.classList.add("cart__item");
         article.setAttribute("data-id", `${Cart[i].id}`);
@@ -88,11 +101,13 @@ function displayCart(products) {
   }
 }
 
+
 // NEW REQUEST FOR PRICES DATA //
 function displayTotal() {
   getProducts.then( (products) => display(products) )
     .catch( (error) => console.error(`Fetch problem displayTotal: ${error}`) );
   }
+
 
 // DISPLAY TOTAL QUANTITY AND PRICE //
 function display(products) {
@@ -112,6 +127,7 @@ function display(products) {
   localStorage.setItem("cart", jsonCart);
 }
 
+
 // DELETE ARTICLE //
 function deleteItem(e) {
   const parent = e.target.closest("article.cart__item");
@@ -124,9 +140,11 @@ function deleteItem(e) {
       let jsonCart = JSON.stringify(Cart);
       localStorage.setItem("cart", jsonCart);
       displayTotal();
+      checkEmptyCart();
     }
   }
 }
+
 
 // CHANGING QUANTITY CHANGES TOTAL //
 function changeQuantity(e) {
@@ -141,6 +159,7 @@ function changeQuantity(e) {
     }
   }
 }
+
 
 // SELECT FROM DOM ELEMENTS //
 let firstName = document.getElementById("firstName");
@@ -161,51 +180,47 @@ formQuestion.forEach(question =>
   question.addEventListener("change", checkUserForm)
 );
 
-//let isValid = false;
 
 // TEST INPUT VALIDITY //
 function checkUserForm() {
-  const firstRegx = /[^A-Za-z-]/gi;
-  const lastCityRegx = /[^A-Za-z\s-]/gi;
-  const addressRegx = /(?:[^\d\sA-Za-z-])+/gi;
-  const emailRegx = /^\w+(?:[\.-]?\w+)*@\w+(?:[\.-]?\w+)*(?:\.\w{2,3})+$/gi;
-
-  const firstTest = firstRegx.test(firstName.value);
-  const lastTest = lastCityRegx.test(lastName.value);
+  //const nameRegex = /^[\p{L} ,.'-]{2.}$/u; : Toutes langues
+  //const firstRegx = /[^A-Za-z-]/gi;
+  //const lastCityRegx = /[^A-Za-z\s-]/gi;
+  const nameCityRegx = /^[a-z ,.'-]{2,}$/i;
+  const addressRegx = /^[\da-z- ,'.\/]{2,}$/i;
+  const emailRegx = /^\w+(?:[\.-]?\w+)*@\w+(?:[\.-]?\w+)*(?:\.\w{2,3})+$/i;
+  const firstTest = nameCityRegx.test(firstName.value);
+  const lastTest = nameCityRegx.test(lastName.value);
   const addressTest = addressRegx.test(address.value);
-  const cityTest = lastCityRegx.test(city.value);
+  const cityTest = nameCityRegx.test(city.value);
   const emailTest = emailRegx.test(email.value)
     
-  if (firstTest == true) {
+  if (firstTest == false) {
     throwError("first");
   } else {firstNameError.textContent = "";}
-  if (lastTest == true) {
+  if (lastTest == false) {
     throwError("last");
   } else {lastNameError.textContent = "";}
-  if (addressTest == true) {
+  if (addressTest == false) {
     throwError("address");
   } else {addressError.textContent = "";}
-  if (cityTest == true) {
+  if (cityTest == false) {
     throwError("city");
   } else {cityError.textContent = "";}
   if (emailTest == false) {
     throwError("email");
   } else {emailError.textContent = "";}
 
-  if (firstTest == false && lastTest == false && addressTest == false && cityTest == false && emailTest == true) {
+  if (firstTest == true && lastTest == true && addressTest == true && cityTest == true && emailTest == true) {
     order.addEventListener("click", buildBody);
   }
-
   order.addEventListener("click", (e) => e.preventDefault());
 }
+
 
 // DISPLAY ERROR MESSAGE IF INVALID INPUT //
 function throwError(string) {
   const invalidMessage = "Champ invalide !";
-  // const firstMessage = "Caractères autorisés : Lettes et tiret (-)";
-  // const lastCityMessage = 'Caractères autorisés: Lettres, tiret "-" et espace';
-  // const addressMessage = 'Caractères autorisés: Lettres, chiffres, tiret "-" et espace';
-  // const emailMessage = "Veuillez entrer une adresse e-mail valide";
 
   if (string.includes("first")) {
     firstNameError.textContent = `${invalidMessage}`;
@@ -220,8 +235,9 @@ function throwError(string) {
   }
 }
 
+
 // BUILD CONTACT OBJECT //
-function buildBody(e) {
+function buildBody() {
   let products = [];
   for (let i in Cart) {
     products.push(Cart[i].id);
@@ -237,26 +253,29 @@ function buildBody(e) {
     },
     products
   }
-  postCommand(bodyObject);
+   postOrder(bodyObject);
 }
+
 
 // POST REQUEST //
-function postCommand(bodyObject) {
+function postOrder(bodyObject) {
   let postRequest = new Request("http://localhost:3000/api/products/order");
 
-  fetch(postRequest, {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify(bodyObject)
-  })
-  .then((response) => {
-    if (!response.ok) {
-      throw new Error(`HTTP error: ${response.status}`);
-    }
-    return response.json();
-  })
-  .then((responses) => confirmOrder(responses))
-}
+    fetch(postRequest, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(bodyObject)
+    })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((responses) => confirmOrder(responses))
+    .catch((error) => console.error(`POST problem: ${error}`));
+  }
+
 
 // DISPLAY ORDER ID ON CONFIRMATION PAGE //
 function confirmOrder(responses) {

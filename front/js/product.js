@@ -15,9 +15,12 @@ fetch(ressourceURL)
   .then( (json) => productDisplay(json) )
   .catch( (error) => console.error(`Fetch problem: ${error}`) );
 
+
 const colorSelect = document.getElementById("colors");
 const price = document.getElementById("price");
 const quantity = document.getElementById("quantity");
+const cartBtn = document.getElementById("addToCart");
+
 
 // SELECT/CREATE DOM ELEMENTS TO DISPLAY PRODUCT INFOS
 function productDisplay(product) {
@@ -35,9 +38,9 @@ function productDisplay(product) {
   colorMenu(product);
 }
   
+
 // CREATE DYNAMIC COLOR SELECTION MENU
 function colorMenu(product) {
-  
   const colors = product.colors;
   for (const color of colors) {
     const newOption = document.createElement("option");
@@ -47,9 +50,7 @@ function colorMenu(product) {
   }
 }
 
-const cartBtn = document.getElementById("addToCart");
 
-  
 // CHECK IF COLOR AND QUANTITY SELECTED
 function checkSelection() {
   if (colorSelect.value == "")   {
@@ -61,12 +62,21 @@ function checkSelection() {
     })
   }
   else if (Number(quantity.value) === 0 || Number(quantity.value) > 100) {
+    let quantitySettings = document.querySelector(".item__content__settings__quantity");
+    let quantityErrorMessage = document.createElement("p");
+    quantityErrorMessage.textContent = "1 produit minimum, 100 produits maximum";
+    quantityErrorMessage.style.color = "orange";
+    quantitySettings.appendChild(quantityErrorMessage);
     quantity.style.color = "red";
     quantity.style.border = "solid 3px red";
     quantity.style.fontWeight = "bold";
     quantity.addEventListener("change", () => {
+      // if (quantitySettings.childElementCount == 3) {
       quantity.removeAttribute("style");
-    })
+      quantityErrorMessage.remove();
+        //quantitySettings.removeChild(quantityErrorMessage);
+    });
+    // quantity.removeEventListener("change", removeErrorAttributes); 
   }
   else {
     checkCart();
@@ -74,6 +84,7 @@ function checkSelection() {
 }
 
 let cartContent = [];
+
 
 // CHECK IF A CART IS IN LOCAL STORAGE AND PASS IT TO JS ARRAY
 function checkCart() {
@@ -84,6 +95,7 @@ function checkCart() {
 
   checkProductInCart();
 }
+
 
 // AVOID NEW LINE CREATION IF PRODUCT IS ALREADY IN CART
 function checkProductInCart() {
@@ -108,16 +120,16 @@ function checkProductInCart() {
       }
     }
   }
-  
   addToCart();
 }
+
 
 // UPDATE CART CONTENT
 function addToCart() {
   let jsonCart = JSON.stringify(cartContent);
   localStorage.setItem("cart", jsonCart);
 
-  //window.location.href = "../html/cart.html";
+  window.location.href = "../html/cart.html";
 }
   
 cartBtn.addEventListener("click", checkSelection);

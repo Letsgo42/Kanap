@@ -1,6 +1,6 @@
 const ressourceURL = "http://localhost:3000/api/products/";
 
-// Request data and handle response from api
+// REQUEST PRODUCTS DATA FROM API
 fetch(ressourceURL)
   .then( (response) => {
     if (!response.ok) {
@@ -11,7 +11,8 @@ fetch(ressourceURL)
   .then( (products) => productsDisplay(products) )
   .catch( (error) => console.error(`Fetch problem: ${error}`) );
 
-// Select/create a DOM element for each product and display it
+
+// DISPLAY PRODUCTS
 function productsDisplay(products) {
   const items = document.getElementById("items");
   
