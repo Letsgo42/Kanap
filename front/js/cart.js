@@ -1,6 +1,6 @@
 // DON'T DISPLAY FORM IF EMPTY CART
 function checkEmptyCart() {
-  if (Cart.length == 0) {
+  if (cartContent.length == 0) {
     let cartPrice = document.querySelector(".cart__price");
     let catrOrder = document.querySelector(".cart__order");
     cartPrice.style.display = "none";
@@ -9,11 +9,11 @@ function checkEmptyCart() {
 }
 
 
-// CONVERT CART CONTENT TO JAVASCRIPT ARRAY
-let Cart = [];
+// CONVERT CART LOCAL CONTENT TO JAVASCRIPT ARRAY
+let cartContent = [];
 let currentContent = localStorage.getItem("cart");
 if (currentContent) {
-  Cart = JSON.parse(currentContent);
+  cartContent = JSON.parse(currentContent);
 }
 checkEmptyCart();
 
@@ -28,15 +28,15 @@ const getProducts = fetch(ressourceURL)
     return response.json();
   });
 
-  getProducts.then((products) => displayCart(products))
-  .catch((error) => console.error(`Fetch problem: ${error}`));
+getProducts.then((products) => displayCart(products))
+.catch((error) => console.error(`Fetch problem: ${error}`));
 
 
 // DISPLAY PRODUCTS IN CART //
 function displayCart(products) {
   for (let product of products) {
-    for (let i in Cart) {
-      if (product._id === Cart[i].id) { 
+    for (let i in cartContent) {
+      if (product._id === cartContent[i].id) { 
         let article = document.createElement("article"); 
         let imgDiv = document.createElement("div");
         let img = document.createElement("img");
@@ -54,15 +54,15 @@ function displayCart(products) {
         const cartItems = document.getElementById("cart__items");
 
         article.classList.add("cart__item");
-        article.setAttribute("data-id", `${Cart[i].id}`);
-        article.setAttribute("data-color", `${Cart[i].color}`);
+        article.setAttribute("data-id", `${cartContent[i].id}`);
+        article.setAttribute("data-color", `${cartContent[i].color}`);
         imgDiv.classList.add("cart__item__img");
         img.setAttribute("src", product.imageUrl);
         img.setAttribute("alt", product.altTxt);
         itemContent.classList.add("cart__item__content");
         itemContentDescription.classList.add("cart__item__content__description");
         productName.textContent = `${product.name}`;
-        productColor.textContent = `${Cart[i].color}`;
+        productColor.textContent = `${cartContent[i].color}`;
         productPrice.textContent = `${product.price}€`;
         itemSettings.classList.add("cart__item__content__settings");
         itemSettingsQuantity.classList.add("cart__item__content__settings__quantity");
@@ -72,7 +72,7 @@ function displayCart(products) {
         inputQuantity.setAttribute("name", "itemQuantity");
         inputQuantity.setAttribute("min", "1");
         inputQuantity.setAttribute("max", "100");
-        inputQuantity.setAttribute("value", `${Cart[i].quantity}`);
+        inputQuantity.setAttribute("value", `${cartContent[i].quantity}`);
         itemSettingsDelete.classList.add("cart__item__content__settings__delete");
         deleteBtn.classList.add("deleteItem");
         deleteBtn.textContent = "Supprimer";
@@ -116,14 +116,14 @@ function display(products) {
   totalQuantity.textContent = 0;
   totalPrice.textContent = 0;
   for (let product of products) {
-    for (let i in Cart) {
-      if (product._id == Cart[i].id) {
-      totalQuantity.textContent = Number(totalQuantity.textContent) + parseInt(`${Cart[i].quantity}`);
-      totalPrice.textContent = Number(totalPrice.textContent) + ((product.price) * parseInt(`${Cart[i].quantity}`));
+    for (let i in cartContent) {
+      if (product._id == cartContent[i].id) {
+      totalQuantity.textContent = Number(totalQuantity.textContent) + parseInt(`${cartContent[i].quantity}`);
+      totalPrice.textContent = Number(totalPrice.textContent) + ((product.price) * parseInt(`${cartContent[i].quantity}`));
       }
     }
   }
-  let jsonCart = JSON.stringify(Cart);
+  let jsonCart = JSON.stringify(cartContent);
   localStorage.setItem("cart", jsonCart);
 }
 
@@ -133,11 +133,11 @@ function deleteItem(e) {
   const parent = e.target.closest("article.cart__item");
   parent.remove();
 
-  for (let i in Cart) {
+  for (let i in cartContent) {
     let parentId = parent.getAttribute("data-id");
-    if (parentId == `${Cart[i].id}`) {
-      Cart.splice(i, 1);
-      let jsonCart = JSON.stringify(Cart);
+    if (parentId == `${cartContent[i].id}`) {
+      cartContent.splice(i, 1);
+      let jsonCart = JSON.stringify(cartContent);
       localStorage.setItem("cart", jsonCart);
       displayTotal();
       checkEmptyCart();
@@ -152,9 +152,9 @@ function changeQuantity(e) {
   let parentId = parent.getAttribute("data-id");
   let parentColor = parent.getAttribute("data-color");
 
-  for (let i in Cart) {
-    if (parentId == `${Cart[i].id}` && parentColor == `${Cart[i].color}`) {
-      Cart[i].quantity = e.target.value;
+  for (let i in cartContent) {
+    if (parentId == `${cartContent[i].id}` && parentColor == `${cartContent[i].color}`) {
+      cartContent[i].quantity = e.target.value;
       displayTotal();
     }
   }
@@ -183,11 +183,11 @@ formQuestion.forEach(question =>
 
 // TEST INPUT VALIDITY //
 function checkUserForm() {
-  //const nameRegex = /^[\p{L} ,.'-]{2.}$/u; : Toutes langues
   //const firstRegx = /[^A-Za-z-]/gi;
   //const lastCityRegx = /[^A-Za-z\s-]/gi;
-  const nameCityRegx = /^[a-z ,.'-]{2,}$/i;
-  const addressRegx = /^[\da-z- ,'.\/]{2,}$/i;
+  //const nameCityRegx = /^[a-z ,.'-]{2,}$/i;
+  const nameCityRegx = /^[\p{L} ,.'-]{2,}$/ui;
+  const addressRegx = /^[\p{L}\d ,'.\/-]{2,}$/ui;
   const emailRegx = /^\w+(?:[\.-]?\w+)*@\w+(?:[\.-]?\w+)*(?:\.\w{2,3})+$/i;
   const firstTest = nameCityRegx.test(firstName.value);
   const lastTest = nameCityRegx.test(lastName.value);
@@ -239,8 +239,8 @@ function throwError(string) {
 // BUILD CONTACT OBJECT //
 function buildBody() {
   let products = [];
-  for (let i in Cart) {
-    products.push(Cart[i].id);
+  for (let i in cartContent) {
+    products.push(cartContent[i].id);
   };
   
   let bodyObject = {

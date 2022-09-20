@@ -1,7 +1,10 @@
+const colorSelect = document.getElementById("colors");
+const quantity = document.getElementById("quantity");
+const cartBtn = document.getElementById("addToCart");
+
 // SELECT PRODUCT ID FROM URL
 let params = new URLSearchParams(document.location.search);
 let id = params.get("id");
-
 const ressourceURL = (`http://localhost:3000/api/products/${id}`);
 
 // REQUEST DATA FROM API
@@ -16,17 +19,12 @@ fetch(ressourceURL)
   .catch( (error) => console.error(`Fetch problem: ${error}`) );
 
 
-const colorSelect = document.getElementById("colors");
-const price = document.getElementById("price");
-const quantity = document.getElementById("quantity");
-const cartBtn = document.getElementById("addToCart");
-
-
 // SELECT/CREATE DOM ELEMENTS TO DISPLAY PRODUCT INFOS
 function productDisplay(product) {
   const itemImg = document.querySelector(".item__img");
   const productName = document.getElementById("title");
   const productDescription = document.getElementById("description");
+  const price = document.getElementById("price");
   const kanapImg = document.createElement("img");
   kanapImg.setAttribute("src", product.imageUrl);
   kanapImg.setAttribute("alt", product.altText);
@@ -83,10 +81,10 @@ function checkSelection() {
   }
 }
 
+
 let cartContent = [];
 
-
-// CHECK IF A CART IS IN LOCAL STORAGE AND PASS IT TO JS ARRAY
+// CONVERT CART LOCAL CONTENT TO JAVASCRIPT ARRAY
 function checkCart() {
   let currentContent = localStorage.getItem("cart");
   if (currentContent) {
